@@ -1,5 +1,5 @@
 # miniChat
-used socket.io
+used socket.io and jQuery
 
 by default there is public messaging, anybody logging in to locaalhost:3200 can see the messages sent.
 to join a private room click on join room.
