@@ -1,0 +1,219 @@
+<html>
+
+<head>
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            margin-top: 30px;
+        }
+
+        .well {
+            background: darkgray;
+        }
+
+        #messageArea {
+            display: none
+        }
+
+        .onlineusers {
+            position: relative;
+            float: left;
+            border: 2px solid rgb(7, 36, 11);
+            font-family: verdana;
+            background-color: rgb(198, 224, 181);
+            padding-left: 10px;
+            padding-bottom: 10px;
+            border-radius: 5%;
+        }
+
+        .entermessage {
+            position: relative;
+            float: right;
+            border: 2px solid #003B62;
+            font-family: verdana;
+            background-color: rgb(194, 123, 188);
+            padding-left: 10px;
+            border-radius: 1%;
+        }
+
+        .privatemessage {
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="userFormArea" class="row">
+            <div class="col-md-12">
+                <form id="userForm">
+                    <div class="form-group">
+                        <div>enter username</div>
+                        <textarea name="" id="username" class="form-control"></textarea>
+                        </br>
+                        <input type="submit" class="btn btn-primary" value="Login">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row" id="messageArea">
+
+            <div class="col-4 onlineusers">
+                <div class="">
+                    <h3 id="window">Online Users</h3>
+                    <div id="usernameDynamic"></div>
+                    <!--<ul class="list-group" id="users"></ul>-->
+                    <!--<textarea class="list-group"></textarea>-->
+                </div>
+
+            </div>
+
+
+            <div class="col-7 align:right entermessage publicMessage">
+                <!--align right and col 7 used-->
+                <div id="chat">
+                    <form id="messageForm">
+                        <div class="form-group">
+                            <div class="abovemsg"></div>
+                            <div>enter message</div>
+                            <textarea name="" id="message" class="form-control"></textarea>
+                            </br>
+                            <input type="submit" class="btn btn-default" value="send message">
+                            <button id='btn-next' name='next' type='button' class='btn btn-block btn-warning room'>Join Room</button>
+                        </div>
+                    </form>
+                    <div class="privatemessage">
+                        <div>enter private user's name</div>
+                        <textarea name="" id="" class="form-control pvtusername"></textarea>
+                        </br>
+                        <div>enter private message</div>
+                        <textarea name="pvtmessage" id="" class="form-control pvtmessage"></textarea>
+                        </br>
+                        <input type="submit" class="btn btn-default sendpvtmsg" value="send private message">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script>
+        $(function () {
+            var socket = io.connect();
+            var $messageForm = $('#messageForm');
+            var $message = $('#message');//id
+            var $messageArea = $('#messageArea');
+            var $chat = $('#chat');//check for class
+            var $formgroup = $('.form-group');
+            var $listgroup = $('.list-group');
+            var $window = $("#window");
+            var $publicMessage = $('.publicMessage')
+            var $privatemessage = $('.privatemessage')
+            var $sendpvtmsg = $('sendpvtmsg');
+            var $abovemsg = $('.abovemsg');
+
+
+            var $onlineusers = $('.onlineusers');
+            var $userFormArea = $('#userFormArea');
+            var $users = $('#users');
+            var $userForm = $('#userFormArea');
+            var $username = $('#username');
+            var $usernameDynamic = $('#usernameDynamic');
+            var $pvtusername = $('.pvtusername');
+            var $pvtmessage = $('.pvtmessage');
+
+            var room1 = 'joy';
+
+            $userForm.submit((e) => {
+                e.preventDefault();
+                console.log('submitted');
+                let y = $username.val();
+                socket.emit('new-user', $username.val(), (data) => {//the username is emitted from here
+                    if (data) { //data is boolean
+                        $userFormArea.hide();
+                        console.log(data);
+                        console.log($username.val())
+                        $messageArea.show();//it has been set by default to display:none
+                    }
+                });
+                //$username.val('');
+            })
+
+            socket.on('get-users', (data) => {
+                //var name ={}; //initializing like this adds [object Object] to the window
+                /*var name = `${$username.val()}'s window`;//gives [object Object]
+                var onceName = 0;
+                if(!onceName){
+                    onceName = 1;
+                    $usernameDynamic.append("\n");//or</br> can be used
+                    $usernameDynamic.append(name);
+                }*/
+                console.log(data);//logs the user names
+                var name = $username.val();
+
+                var inside = '';
+                for (x of data) {
+                    console.log(`the data from get-users event is ${x}`);
+                    //var $btn = document.createElement("BUTTON");
+                    //$btn.setAttribute("value",x);
+                    //console.log(($btn).val());
+                    inside += '<li class="list-group-item">' + x + '</li>';
+                    //$listgroup.append("\n");    
+                    //$listgroup.append(inside);
+                }
+                //$listgroup.append(inside);
+                $usernameDynamic.html(inside);
+                //$listgroup.html(inside);
+                //console.log(JSON.stringify(($users.html())));
+            });
+
+            //////////////////////////the click on join room button
+            $(document).ready(function () {
+                $('.room').click((e) => {
+                    e.preventDefault();
+                    $privatemessage.show();//it has been set by default to display:none
+                    var pvtdata = {
+                        pvtname: $pvtusername.val(),
+                        pvtmsg: $pvtmessage.val()   
+                    };
+                    socket.emit('room', room1);
+                    
+                })
+                $('.sendpvtmsg').click(() => {
+                    var pvtdata = {
+                        pvtname: $username.val(),
+                        pvtmsg: $pvtmessage.val()   
+                    };
+                    socket.emit('room-message', pvtdata);
+                    //io.to(room1).emit('private-message', 'what is going on, party people?');
+                    console.log(`this is line 187 clicked on sendpvtmsg ${pvtdata.pvtmsg}`)//, $pvtmessage.html());
+                    $pvtmessage.val('');
+                });
+
+                socket.on('updatechat',(data)=>{
+                    $privatemessage.append('<div class="well"><strong>'+data.pvtname+' says : '+ '</strong>'+ data.pvtmsg+'</div></br>')//'<div class="well"><strong>' + data.user + ' says : ' + '</strong>' + data.msg + '</div></br>');
+                    //$pvtmessage.val('');
+                })
+            })
+
+            $messageForm.submit((e) => {
+                e.preventDefault();
+                //console.log('submitted');
+                let chatData = { user: $username.val(), msg: $message.val() };
+                socket.emit('send-message', chatData);
+                console.log(chatData);
+                $message.val('');
+            })
+
+
+            socket.on('new-message', (data) => {
+                console.log(data);
+                $abovemsg.append('<div class="well"><strong>' + data.user + ' says : ' + '</strong>' + data.msg + '</div></br>');
+            })
+        })
+    </script>
+</body>
+
+</html>
