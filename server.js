@@ -11,8 +11,9 @@ app.get('/',(req,res)=>{res.sendFile(__dirname + '/index.html')});
 console.log('hi world');
 
 io.on('connection',(socket)=>{
-    console.log(socket.id);
+    console.log(socket.id + ' @line 14 server');
     connections.push(socket);
+    //console.log(socket);
     let socket1 = socket;
     console.log('connected : %s sockets connected', connections.length);
 
@@ -33,7 +34,7 @@ io.on('connection',(socket)=>{
 
     socket.on('send-message',(data)=>{
         let y = JSON.stringify(data);
-        console.log(y);
+        console.log(`${y} from line 37 @ server.js`);
         io.emit('new-message',data);
     })
 
@@ -50,9 +51,10 @@ io.on('connection',(socket)=>{
     })
 
     socket.on('room-message',(data)=>{
-        console.log(`line 53 ${JSON.stringify(data)}`);
+        console.log(`line 54 ${JSON.stringify(data)}`);
         //let d = data;
-        socket.broadcast.to('joy').emit('updatechat',data)// 'SERVER', socket.username+' has joined this room');
+        //socket.broadcast.to('joy').emit('updatechat',data)// 'SERVER', socket.username+' has joined this room');
+        io.in('joy').emit('updatechat',data);
         console.log('inside room1');
         //socket.emit
     })
