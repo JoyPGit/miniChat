@@ -136,6 +136,7 @@
                         console.log(data);
                         console.log($username.val())
                         $messageArea.show();//it has been set by default to display:none
+                        $window.prepend('<div class="well"><strong>'+y+" 's window "+ '</strong></div></br>');
                     }
                 });
                 //$username.val('');
@@ -170,7 +171,6 @@
             });
 
             //////////////////////////the click on join room button
-            $(document).ready(function () {
                 $('.room').click((e) => {
                     e.preventDefault();
                     $privatemessage.show();//it has been set by default to display:none
@@ -196,14 +196,14 @@
                     $privatemessage.append('<div class="well"><strong>'+data.pvtname+' says : '+ '</strong>'+ data.pvtmsg+'</div></br>')//'<div class="well"><strong>' + data.user + ' says : ' + '</strong>' + data.msg + '</div></br>');
                     //$pvtmessage.val('');
                 })
-            })
+
 
             $messageForm.submit((e) => {
                 e.preventDefault();
                 //console.log('submitted');
                 let chatData = { user: $username.val(), msg: $message.val() };
                 socket.emit('send-message', chatData);
-                console.log(chatData);
+                console.log('JSON.stringify(chatData)'+ ' from line 206  @index.html');
                 $message.val('');
             })
 
